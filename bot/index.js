@@ -1,12 +1,15 @@
 import TelegramBot from "node-telegram-bot-api";
 import "../config/dotenv.js";
 import { generate } from "../api/gemini.js";
+import { botToken } from "../constant/index.js";
+import { getBase64PhotoById } from "../api/telegram.js";
+import { BotResponseError } from "../tool/error.js";
 
 export class Bot {
     constructor() {
       this.isBreak = false;
       this.isStopped = false;
-      this.token = process.env.BOT_TOKEN;
+      this.token = botToken;
       this.bot = null;
     }
 
@@ -24,15 +27,19 @@ export class Bot {
         });
       });
 
-    //   this.bot.on("photo", (msg, meta) => {
-    //     this.requestCallback(async (disrequest) => {
-    //         const chatId = msg.chat.id;
-    //         console.log(msg);
-    //         console.dir(meta);
-    //         await this.bot.sendPhoto(chatId, )
-    //         disrequest();
-    //     });
-    //   });
+      this.bot.on("photo", (msg, meta) => {
+        this.requestCallback(async (disrequest) => {
+          const chatId = msg.chat.id;
+          try {
+            if (meta.type !== "photo") throw new BotResponseError("[Please send valid photo file format]");
+            const fileId = msg.photo[msg.photo.length - 1].file_id;
+          } catch (err) {
+            BotResponseError.sendMessage(this.bot, chatId, err);
+          } finally {
+            disrequest();
+          }
+        });
+      });
   
       this.bot.onText(/^(.+)$/, (msg, match) => {
         this.requestCallback(async (disrequest) => {

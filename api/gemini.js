@@ -1,8 +1,8 @@
 import "../config/dotenv.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { geminiKey } from "../constant/index.js";
 
-const apiKey = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
+const genAI = new GoogleGenerativeAI(geminiKey);
 
 const getPromptResult = async (prompt, images) => {
     const modelName = images ? "gemini-pro-vision" : "gemini-pro";
