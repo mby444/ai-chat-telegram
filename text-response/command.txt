@@ -1,0 +1,6 @@
+Daftar Command:
+- /help - menampilkan daftar command
+- /clear - membersihkan history chat
+- /random - menjelaskan topik random
+
+Anda tidak perlu menggunakan command ketika ingin mengirim pertanyaan apapun.

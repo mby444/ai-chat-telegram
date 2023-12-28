@@ -1,8 +1,8 @@
 import TelegramBot from "node-telegram-bot-api";
 import "../config/dotenv.js";
-import { generate } from "../api/gemini.js";
-import { botToken } from "../constant/index.js";
-import { getBase64PhotoById } from "../api/telegram.js";
+import { generate, checkMimeType } from "../api/gemini.js";
+import { botToken, botCommandList } from "../constant/index.js";
+import { fileToGenerativePart, savePhoto } from "../api/telegram.js";
 import { BotResponseError } from "../tool/error.js";
 
 export class Bot {
@@ -21,20 +21,31 @@ export class Bot {
       this.bot.onText(/^((\/start|\/help))$/, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const chatId = msg.chat.id;
-        //   const response = await getReply(match[0]);
-          await this.bot.sendMessage(chatId, "Test");
-          disrequest();
+          try {
+            await this.bot.sendMessage(chatId, botCommandList);
+          } catch (err) {
+            BotResponseError.sendMessage(this.bot, chatId, err);
+          } finally {
+            disrequest();
+          }
         });
       });
 
       this.bot.on("photo", (msg, meta) => {
         this.requestCallback(async (disrequest) => {
-          const chatId = msg.chat.id;
+          const [chatId, username, text] = [msg.chat.id, msg.chat.username, msg.caption];
           try {
-            if (meta.type !== "photo") throw new BotResponseError("[Please send valid photo file format]");
-            const fileId = msg.photo[msg.photo.length - 1].file_id;
+            const file = msg.photo[msg.photo.length - 1];
+            const fileId = file.file_id;
+            const fileUId = file.file_unique_id;
+            const photo = await fileToGenerativePart(fileId);
+            checkMimeType(photo.inlineData.data);
+            await savePhoto(username, fileId, fileUId, "./upload/photo");
+            const response = await generate(text, [photo]);
+            await this.bot.sendMessage(chatId, response);
           } catch (err) {
             BotResponseError.sendMessage(this.bot, chatId, err);
+            console.log(err)
           } finally {
             disrequest();
           }
@@ -44,6 +55,7 @@ export class Bot {
       this.bot.onText(/^(.+)$/, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const [chatId, text] = [msg.chat.id, match[1] || ""];
+          console.log(text);
           await this.bot.sendMessage(chatId, "Wait...");
           const response = await generate(text);
           await this.bot.sendMessage(chatId, response);
