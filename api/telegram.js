@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import fetch from "node-fetch";
 import "../config/dotenv.js";
 import { botToken, mimeSignatures } from "../constant/index.js";
 

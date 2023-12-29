@@ -45,7 +45,7 @@ export class Bot {
             await this.bot.sendMessage(chatId, response);
           } catch (err) {
             BotResponseError.sendMessage(this.bot, chatId, err);
-            console.log(err)
+            console.log(48, err)
           } finally {
             disrequest();
           }
@@ -55,11 +55,17 @@ export class Bot {
       this.bot.onText(/^(.+)$/, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const [chatId, text] = [msg.chat.id, match[1] || ""];
-          console.log(text);
-          await this.bot.sendMessage(chatId, "Wait...");
-          const response = await generate(text);
-          await this.bot.sendMessage(chatId, response);
-          disrequest();
+          try {
+            console.log(text);
+            await this.bot.sendMessage(chatId, "Wait...");
+            const response = await generate(text);
+            await this.bot.sendMessage(chatId, response);
+          } catch (err) {
+            BotResponseError.sendMessage(this.bot, chatId, err);
+            // console.log(64, err);
+          } finally {
+            disrequest();
+          }
         });
       });
     }
