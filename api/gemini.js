@@ -6,20 +6,43 @@ import { BotResponseError } from "../tool/error.js";
 
 const genAI = new GoogleGenerativeAI(geminiKey);
 
-const getPromptResult = async (prompt, images) => {
-    const defaultImagePrompt = "Deskripsikan gambar ini menggunakan Bahasa Indonesia";
+export const getChatHistory = (history) => {
+    const defaultHistory = [
+        {
+            role: "user",
+            parts: "Gunakan bahasa indonesia",
+        },
+        {
+            role: "model",
+            parts: "Baiklah, saya akan menggunakan bahasa Indonesia.",
+        },
+    ];
+    if (!history) return defaultHistory;
+    const mappedHistory = history.map((h) => {
+        return { role: h.role, parts: h.parts };
+    });
+    const mergedHistory = [...defaultHistory, ...mappedHistory];
+    return mergedHistory;
+};
+
+const getPromptResult = async (prompt, images, history) => {
+    console.log("history", history);
     const isPromptEmpty = typeof prompt === "string" ? !prompt.trim() : true;
-    const imagePrompt = isPromptEmpty ? defaultImagePrompt : prompt;
-    const modelName = images ? "gemini-pro-vision" : "gemini-pro";
-    const model = genAI.getGenerativeModel({ model: modelName });
-    const contentParams = images ? [imagePrompt, ...images] : prompt;
-    console.log(16, contentParams)
-    const result = await model.generateContent(contentParams);
+    if (images) {
+        const defaultImagePrompt = "Deskripsikan gambar ini menggunakan Bahasa Indonesia";
+        const imagePrompt = isPromptEmpty ? defaultImagePrompt : prompt;
+        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+        const result = await model.generateContent([imagePrompt, ...images]);
+        return result;
+    }
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessage(prompt);
     return result;
 };
 
-export const generate = async (prompt, images) => {
-    const result = await getPromptResult(prompt, images);
+export const generate = async (prompt, images, history) => {
+    const result = await getPromptResult(prompt, images, history);
     const response = result.response;
     const text = response.text();
     return text;
