@@ -1,7 +1,14 @@
 import { model, Schema } from "mongoose";
 
 const clearedHistorySchema = new Schema({
-    id: Number,
+    chatId: Number,
+    firstName: String,
+    lastName: String,
+    username: String,
+    type: String,
+    isBot: Boolean,
+    languageCode: String,
+    date: Number,
     histories: [
         [
             {
@@ -12,4 +19,4 @@ const clearedHistorySchema = new Schema({
     ],
 });
 
-export default model("users", clearedHistorySchema);
+export default model("cleared_histories", clearedHistorySchema);

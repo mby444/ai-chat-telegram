@@ -5,7 +5,9 @@ import { botToken, botCommandList } from "../constant/index.js";
 import { fileToGenerativePart, savePhoto } from "../api/telegram.js";
 import { BotResponseError } from "../tool/error.js";
 import { saveUserHistory } from "../database/tool/users.js";
+import { moveHistory } from "../database/tool/cleared-histories.js";
 import User from "../database/model/Users.js";
+import ClearedHistory from "../database/model/ClearedHistories.js";
 
 export class Bot {
     constructor() {
@@ -20,7 +22,7 @@ export class Bot {
     }
   
     start() {
-      this.bot.onText(/^((\/start|\/help))$/, (msg, match) => {
+      this.bot.onText(/^((\/start|\/help))/, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const chatId = msg.chat.id;
           try {
@@ -33,10 +35,52 @@ export class Bot {
         });
       });
 
+      this.bot.onText(/^(\/random)/, (msg, match) => {
+        this.requestCallback(async (disrequest) => {
+          const chatId = msg.chat.id;
+          const userData = { ...msg.from, ...msg.chat, date: msg.date };
+          const text = "Jelaskan tentang topik apapun secara random";
+          try {
+            await this.bot.sendMessage(chatId, "Mengetik...");
+            const oldUser = await User.findOne({ chatId }, { "_id": 0 });
+            const oldHistory = getChatHistory(oldUser?.history);
+            const response = await generate(text, null, oldHistory);
+            await this.bot.sendMessage(chatId, response);
+            await saveUserHistory(userData, text, response, oldUser);
+          } catch (err) {
+            await this.bot.sendMessage(chatId, "[Gagal menampilkan topik random]");
+          } finally {
+            disrequest();
+          }
+        });
+      });
+
+      this.bot.onText(/^(\/clear)/, (msg, match) => {
+        const chatId = msg.chat.id;
+        const userData = { ...msg.from, ...msg.chat, date: msg.date };
+        this.requestCallback(async (disrequest) => {
+          try {
+            await this.bot.sendMessage(chatId, "[Membersihkan history chat...]");
+            const oldUser = await User.findOne({ chatId }, { "_id": 0 });
+            const oldHistory = oldUser?.history;
+            const oldClearedHistory = await ClearedHistory.findOne({ chatId });
+            await moveHistory(userData, oldHistory, oldClearedHistory);
+            await this.bot.sendMessage(chatId, "[History chat berhasil dibersihkan, silahkan memulai topik baru]");
+          } catch (err) {
+            await BotResponseError.sendMessage(this.bot, chatId, err, {
+              defaultMessage: "[History gagal dibersihkan]",
+            });
+            console.log("/clear", err);
+          } finally {
+            disrequest();
+          }
+        });
+      });
+
       this.bot.on("photo", (msg, meta) => {
         this.requestCallback(async (disrequest) => {
           const [chatId, username, text] = [msg.chat.id, msg.chat.username, msg.caption];
-          const userData = { ...msg.from, ...msg.chat };
+          const userData = { ...msg.from, ...msg.chat, date: msg.date };
           try {
             const file = msg.photo[msg.photo.length - 1];
             const fileId = file.file_id;
@@ -61,7 +105,7 @@ export class Bot {
       this.bot.onText(/^(.+)$/, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const [chatId, text] = [msg.chat.id, match[1] || ""];
-          const userData = { ...msg.from, ...msg.chat };
+          const userData = { ...msg.from, ...msg.chat, date: msg.date };
           try {
             await this.bot.sendMessage(chatId, "Mengetik...");
             const oldUser = await User.findOne({ chatId }, { "_id": 0 });
