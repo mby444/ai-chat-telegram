@@ -48,6 +48,12 @@ export const fileToGenerativePart = async (fileId) => {
   };
 };
 
+export const getPhotoCaption = (text = "") => {
+  const defaultCaption = "Deskripsikan gambar ini menggunakan Bahasa Indonesia";
+  const caption = !!text.trim() ? text : defaultCaption;
+  return caption;
+};
+
 export const savePhoto = async (username, fileId, fileUId, directory) => {
   const fileBuffer = await getBufferPhotoById(fileId);
   const fileExtension = `.${detectMimeType(fileBuffer.toString("base64")).split("/")[1]}`;

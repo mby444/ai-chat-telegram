@@ -1,7 +1,7 @@
 import "../config/dotenv.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { geminiKey, allowedImageMime } from "../constant/index.js";
-import { detectMimeType } from "./telegram.js";
+import { detectMimeType, getPhotoCaption } from "./telegram.js";
 import { BotResponseError } from "../tool/error.js";
 
 const genAI = new GoogleGenerativeAI(geminiKey);
@@ -25,12 +25,10 @@ export const getChatHistory = (history) => {
     return mergedHistory;
 };
 
-const getPromptResult = async (prompt, images, history) => {
+export const getPromptResult = async (prompt, images, history) => {
     console.log("history", history);
-    const isPromptEmpty = typeof prompt === "string" ? !prompt.trim() : true;
     if (images) {
-        const defaultImagePrompt = "Deskripsikan gambar ini menggunakan Bahasa Indonesia";
-        const imagePrompt = isPromptEmpty ? defaultImagePrompt : prompt;
+        const imagePrompt = getPhotoCaption(prompt);
         const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
         const result = await model.generateContent([imagePrompt, ...images]);
         return result;

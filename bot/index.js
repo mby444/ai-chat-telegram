@@ -2,7 +2,7 @@ import TelegramBot from "node-telegram-bot-api";
 import "../config/dotenv.js";
 import { generate, checkMimeType, getChatHistory } from "../api/gemini.js";
 import { botToken, botCommandList } from "../constant/index.js";
-import { fileToGenerativePart, savePhoto } from "../api/telegram.js";
+import { fileToGenerativePart, savePhoto, getPhotoCaption } from "../api/telegram.js";
 import { BotResponseError } from "../tool/error.js";
 import { saveUserHistory } from "../database/tool/users.js";
 import { moveHistory } from "../database/tool/cleared-histories.js";
@@ -86,13 +86,14 @@ export class Bot {
             const fileId = file.file_id;
             const fileUId = file.file_unique_id;
             await this.bot.sendMessage(chatId, "Mengetik...");
+            const caption = getPhotoCaption(text);
             const oldUser = await User.findOne({ chatId }, { "_id": 0 });
             const photo = await fileToGenerativePart(fileId);
             checkMimeType(photo.inlineData.data);
             await savePhoto(username, fileId, fileUId, "./upload/photo");
-            const response = await generate(text, [photo], );
+            const response = await generate(caption, [photo]);
             await this.bot.sendMessage(chatId, response);
-            await saveUserHistory(userData, text, response, oldUser);
+            await saveUserHistory(userData, caption, response, oldUser);
           } catch (err) {
             BotResponseError.sendMessage(this.bot, chatId, err);
             console.log(48, err)
@@ -102,7 +103,7 @@ export class Bot {
         });
       });
   
-      this.bot.onText(/^(.+)$/, (msg, match) => {
+      this.bot.onText(/([\s\S]*)/m, (msg, match) => {
         this.requestCallback(async (disrequest) => {
           const [chatId, text] = [msg.chat.id, match[1] || ""];
           const userData = { ...msg.from, ...msg.chat, date: msg.date };
