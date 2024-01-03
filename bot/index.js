@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import "../config/dotenv.js";
 import { generate, checkMimeType, getChatHistory } from "../api/gemini.js";
-import { botToken, botCommandList } from "../constant/index.js";
+import { botToken, botCommandList, botChatOpts } from "../constant/index.js";
 import { fileToGenerativePart, savePhoto, getPhotoCaption } from "../api/telegram.js";
 import { BotResponseError } from "../tool/error.js";
 import { saveUserHistory } from "../database/tool/users.js";
@@ -26,8 +26,9 @@ export class Bot {
         this.requestCallback(async (disrequest) => {
           const chatId = msg.chat.id;
           try {
-            await this.bot.sendMessage(chatId, botCommandList);
+            await this.bot.sendMessage(chatId, botCommandList, botChatOpts);
           } catch (err) {
+            console.log("start", err)
             BotResponseError.sendMessage(this.bot, chatId, err);
           } finally {
             disrequest();
@@ -45,7 +46,7 @@ export class Bot {
             const oldUser = await User.findOne({ chatId }, { "_id": 0 });
             const oldHistory = getChatHistory(oldUser?.history);
             const response = await generate(text, null, oldHistory);
-            await this.bot.sendMessage(chatId, response);
+            await this.bot.sendMessage(chatId, response, botChatOpts);
             await saveUserHistory(userData, text, response, oldUser);
           } catch (err) {
             await this.bot.sendMessage(chatId, "[Gagal menampilkan topik random]");
@@ -92,7 +93,7 @@ export class Bot {
             checkMimeType(photo.inlineData.data);
             await savePhoto(username, fileId, fileUId, "./upload/photo");
             const response = await generate(caption, [photo]);
-            await this.bot.sendMessage(chatId, response);
+            await this.bot.sendMessage(chatId, response, botChatOpts);
             await saveUserHistory(userData, caption, response, oldUser);
           } catch (err) {
             BotResponseError.sendMessage(this.bot, chatId, err);
@@ -112,7 +113,7 @@ export class Bot {
             const oldUser = await User.findOne({ chatId }, { "_id": 0 });
             const oldHistory = getChatHistory(oldUser?.history);
             const response = await generate(text, null, oldHistory);
-            await this.bot.sendMessage(chatId, response);
+            await this.bot.sendMessage(chatId, response, botChatOpts);
             await saveUserHistory(userData, text, response, oldUser);
           } catch (err) {
             BotResponseError.sendMessage(this.bot, chatId, err);

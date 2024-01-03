@@ -11,3 +11,4 @@ export const mimeSignatures = {
     "/9j/": "image/jpeg",
 };
 export const allowedImageMime = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"];
+export const botChatOpts = { parse_mode: "MarkdownV2" };

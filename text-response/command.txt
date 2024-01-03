@@ -1,8 +1,8 @@
 Daftar Command:
-- /help - menampilkan daftar command
-- /random - menjelaskan topik random
-- /clear - membersihkan history chat
+/help \- Menampilkan daftar command
+/random \- Menjelaskan topik apapun secara random
+/clear \- Membersihkan history chat
 
 Informasi Penggunaan:
-- Anda tidak perlu menggunakan command ketika ingin mengirim pertanyaan atau obrolan apapun.
-- Anda dapat mengirim gambar beserta caption yang berisi pertanyaan apapun terkait gambar tersebut.
+\- Anda tidak perlu menggunakan command ketika ingin mengirim pertanyaan atau obrolan apapun\.
+\- Anda dapat mengirim gambar beserta caption yang berisi pertanyaan apapun terkait gambar tersebut\.
