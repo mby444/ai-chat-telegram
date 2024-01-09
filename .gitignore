@@ -1,5 +1,7 @@
 node_modules
 ignored
 upload
+test
 .env
 *.rest
+*.test.js
