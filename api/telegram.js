@@ -1,8 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { marked } from "marked";
 import "../config/dotenv.js";
-import { botToken, mimeSignatures, reservedMdChars, reservedMdRegExp } from "../constant/index.js";
+import { botToken, mimeSignatures, reservedMdRegExp } from "../constant/index.js";
 
 export const analizeMarkdown = (markdownString) => {
   const stack = [];

@@ -6,11 +6,3 @@
 *Informasi Penggunaan:*
 - Anda tidak perlu menggunakan command ketika ingin mengirim pertanyaan atau obrolan apapun.
 - Anda dapat mengirim gambar beserta caption yang berisi pertanyaan apapun terkait gambar tersebut.
-
-```js
-const arr = [];
-```
-
-```python
-arr = []
-```
