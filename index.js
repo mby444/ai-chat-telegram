@@ -1,3 +1,4 @@
+import "./server/index.js";
 import { connectDB } from "./database/connection.js";
 import { Bot } from "./bot/index.js";
 
