@@ -4,5 +4,5 @@ import User from "../database/model/Users.js";
 export const indexRoute = Router();
 
 indexRoute.get("/", async (req, res) => {
-    res.render("index");
+  res.sendStatus(200);
 });
