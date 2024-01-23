@@ -6,7 +6,6 @@ import { notFoundRoute } from "../route/not-found.js";
 export const app = express();
 const port = process.env.PORT;
 
-app.set("view engine", "ejs");
 app.use(express.static("./public"));
 app.get("/", indexRoute);
 app.all("*", notFoundRoute);
